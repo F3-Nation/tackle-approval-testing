@@ -1,0 +1,25 @@
+# Mirrors f3-nation PR #1591's pr-title.yml gating; the lint step fails if it
+# ever runs without a PR title, so a green merge-group run proves it skipped.
+name: PR Title
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+  merge_group:
+    types: [checks_requested]
+permissions:
+  contents: read
+jobs:
+  lint-title:
+    runs-on: ubuntu-latest
+    steps:
+      - if: github.event_name == 'pull_request'
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - if: github.event_name == 'pull_request'
+        run: echo "setup stand-in"
+      - name: Lint PR title
+        if: ${{ github.event_name == 'pull_request' && !startsWith(github.head_ref, 'release-please--') }}
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: test -n "$PR_TITLE" && echo "title=$PR_TITLE"
