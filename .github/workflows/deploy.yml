@@ -1,0 +1,17 @@
+name: deploy
+on:
+  push:
+    tags: ["app@*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to redeploy
+        required: true
+permissions:
+  contents: read
+jobs:
+  deploy-prod:
+    runs-on: ubuntu-latest
+    environment: app-production
+    steps:
+      - run: echo "deploying ${{ inputs.tag || github.ref_name }} from ref ${{ github.ref }}"
