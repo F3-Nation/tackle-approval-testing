@@ -1,0 +1,17 @@
+name: bot-dispatch
+# Starts a deploy as github-actions[bot], standing in for a release app.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        required: true
+permissions:
+  actions: write
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - run: gh workflow run deploy.yml --repo "$GITHUB_REPOSITORY" --ref "$TAG" -f tag="$TAG"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
