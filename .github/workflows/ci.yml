@@ -3,10 +3,12 @@ on:
   pull_request:
   push:
     branches: [main]
+  merge_group:
+    types: [checks_requested]
 permissions:
   contents: read
 jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
-      - run: echo ok
+      - run: echo "event=$GITHUB_EVENT_NAME ref=$GITHUB_REF"
