@@ -11,4 +11,21 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "event=$GITHUB_EVENT_NAME ref=$GITHUB_REF"
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: ${{ github.event_name != 'push' && '0' || '1' }}
+      - name: Pin suppression-check base for merge groups
+        if: github.event_name == 'merge_group'
+        env:
+          MERGE_GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}
+        run: echo "TURBO_SCM_BASE=${MERGE_GROUP_BASE_SHA}" >> "$GITHUB_ENV"
+      - name: Base must resolve on merge groups
+        run: |
+          echo "event=$GITHUB_EVENT_NAME TURBO_SCM_BASE=${TURBO_SCM_BASE:-<unset>}"
+          if [ "$GITHUB_EVENT_NAME" = merge_group ]; then
+            test -n "$TURBO_SCM_BASE"
+            git rev-parse --verify --quiet "${TURBO_SCM_BASE}^{commit}"
+            echo "main-tip=$(git rev-parse origin/main 2>/dev/null || echo none)"
+            git log --oneline -3
+          fi
